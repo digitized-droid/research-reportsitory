@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URSM Library - Read Only</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+        :root {
+            --primary-blue: #003366;
+            --secondary-blue: #00509d;
+            --accent-yellow: #ffcc00;
+            --soft-white: #f8f9fa;
+            --text-dark: #212529;
+            --text-gray: #6c757d;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --gradient: linear-gradient(135deg, #003366 0%, #00509d 100%);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--soft-white);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* --- Header & Navigation --- */
+        header {
+            background: #1e3a8a;
+            color: white;
+            padding: 1rem 5%;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .myImage {
+            height: 60px;
+        }
+
+        .nav-menu {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      align-items: center;
+    }
+
+    .nav-menu li {
+      margin: 0;
+    }
+
+    .nav-menu a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: color 0.3s;
+      position: relative;
+      padding-bottom: 0.3rem;
+    }
+
+    .nav-menu a:hover {
+      color: #fbbf24;
+    }
+
+    .nav-menu a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #fbbf24;
+      transition: width 0.3s ease;
+    }
+
+    .nav-menu a:hover::after {
+      width: 100%;
+    }
+        /* --- Main Layout --- */
+        main {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 5%;
+        }
+
+        /* --- Research List & Cards --- */
+        h1 {
+            font-size: 2rem;
+            color: var(--primary-blue);
+            margin-bottom: 1.5rem;
+            border-left: 5px solid var(--accent-yellow);
+            padding-left: 15px;
+        }
+
+        .abstract-page {
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid #e9ecef;
+            transition: transform 0.2s;
+        }
+
+        .abstract-page:hover {
+            transform: translateY(-3px);
+        }
+
+        .abstract-title {
+            padding: 1.5rem;
+            background: #fff;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--primary-blue);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .abstract-meta {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            margin-top: 5px;
+        }
+
+        .abstract-content {
+            display: none;
+            padding: 1.5rem;
+            border-top: 1px solid #eee;
+            background: #fcfcfc;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 10px;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .download-pdf {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .download-pdf:hover {
+            background: var(--accent-yellow);
+            color: var(--primary-blue);
+        }
+
+        /* --- Sidebar --- */
+        #sidebar {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            height: fit-content;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 100px;
+        }
+
+        #search {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #eee;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            outline: none;
+        }
+
+        #search:focus {
+            border-color: var(--secondary-blue);
+        }
+
+        #sidebar h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: var(--primary-blue);
+            border-bottom: 2px solid var(--accent-yellow);
+            display: inline-block;
+        }
+
+        #year-buttons, #keyword-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        button:not(.download-pdf):not(.hamburger) {
+            background: #f0f2f5;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover:not(.download-pdf) {
+            background: var(--secondary-blue);
+            color: white;
+        }
+		
+		/* Active filter button */
+button.active-filter {
+    background: var(--secondary-blue);
+    color: white;
+    font-weight: 600;
+}
+
+        /* --- Footer --- */
+        footer {
+            background: #1e3a8a;
+            color: #adb5bd;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-accent {
+            color: var(--accent-yellow);
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 900px) {
+            main { grid-template-columns: 1fr; }
+            .header-container { flex-direction: column; gap: 1rem; }
+            .nav-menu { gap: 1rem; }
+        }
+    </style>
+</head>
+<header>
+    <div class="header-container">
+        <img src="urs logo.png" alt="URS Logo" class="myImage">
+        <nav>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="publication.html">Publications</a></li>
+                <li><a href="policies.html">Policies</a></li>
+                <li><a href="inquire.html">Contact</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+<body>
+<main>
+   
+		
+		<div id="main-content">
+    <h1>Digital Collection</h1>
+    <div id="research-list">Loading research...</div>
+  </div>
+
+  <div id="sidebar">
+    <input type="text" id="search" placeholder="Search by title, author, keyword...">
+	<h3>Filter by Year</h3>
+    <div id="year-buttons"></div>
+    <details>
+    <summary><h3>Top Keywords</h3></summary>
+    <div id="keyword-buttons"></div>
+    </details>
+    <button id="clear-filters" class="clearbtn">Clear Filters</button>
+  </div>
+</main>
+</body>
+ <!-- FOOTER (unchanged) -->
+  <footer>
+    <p>© 2025 <span class="footer-accent">University of Rizal System Morong Campus Library</span>. All rights reserved.</p>
+  </footer>
+<script>
+	document.addEventListener("DOMContentLoaded", async () => {
+
+	const SUPABASE_URL = "https://emakckalouwopodqehgn.supabase.co";
+	const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtYWtja2Fsb3V3b3BvZHFlaGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU1NzA3OTYsImV4cCI6MjA4MTE0Njc5Nn0.eRQMLCrL4xEb58ap8RKTOyJx8pusfbr8Ut037GpYXfk";
+	const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+	
+	const list = document.getElementById("research-list");
+	const search = document.getElementById("search");
+	let dataCache = [];
+	const filters = {
+	  text: "",
+	  year: null,
+	  keyword: null
+	};
+	const clearBtn = document.getElementById("clear-filters");
+clearBtn.addEventListener("click", () => {
+  // Reset filters
+  filters.text = "";
+  filters.year = null;
+  filters.keyword = null;
+
+  // Reset search input
+  search.value = "";
+
+  // REMOVE active highlights
+  document.querySelectorAll(".active-filter")
+    .forEach(btn => btn.classList.remove("active-filter"));
+
+  // Re-render all data
+  applyFilters();
+});
+
+
+	/* ---------- HELPERS ---------- */
+	const toArray = v =>
+	  Array.isArray(v)
+		? v
+		: typeof v === "string"
+		  ? v
+			  .split(/[\n,]/)   // split by newline OR comma
+			  .map(x => x.trim())
+			  .filter(Boolean)
+		  : [];
+
+
+	const firstAuthor = a =>
+	  Array.isArray(a) && a.length ? a[0] + (a.length>1 ? " et al." : "") : a || "";
+	function applyFilters() {
+	  const filtered = dataCache.filter(r => {
+		const matchText =
+		  !filters.text ||
+		  r.title?.toLowerCase().includes(filters.text) ||
+		  toArray(r.authors).join(" ").toLowerCase().includes(filters.text) ||
+		  (r.keywords||[]).some(k => k.toLowerCase().includes(filters.text));
+
+		const matchYear =
+		  !filters.year || r.academic_year === filters.year;
+
+		const matchKeyword =
+	  !filters.keyword || (r.keywords||[]).some(k => k.toLowerCase().includes(filters.keyword.toLowerCase()));
+
+		return matchText && matchYear && matchKeyword;
+	  });
+
+	  render(filtered);
+	}
+
+	/* ---------- LOAD ---------- */
+	async function load() {
+	  const { data, error } = await supabaseClient
+		.from("researches")
+		.select("*")
+		.order("created_at",{ascending:false});
+
+	  if (error) {
+		list.textContent = error.message;
+		return;
+	  }
+
+	  dataCache = data || [];
+	  render(dataCache);
+	  renderYears(dataCache);
+	  renderKeywords(dataCache);
+	}
+	await load();
+
+	/* ---------- RENDER ---------- */
+	function render(rows) {
+	  if (!rows.length) {
+		list.textContent = "No research found.";
+		return;
+	  }
+
+	  list.innerHTML = rows.map(r=>`
+		<div class="abstract-page">
+      <div class="abstract-title">
+        ${r.title}
+        <div class="abstract-meta">${firstAuthor(r.authors)} — ${r.academic_year||"—"}</div>
+      </div>
+
+      <div class="abstract-content">
+        <div class="meta-grid">
+          <div><strong>Authors:</strong></div><div>${toArray(r.authors).join("<br>")}</div>
+          <div><strong>Course:</strong></div><div>${toArray(r.course).join("<br>")}</div>
+          <div><strong>Categor:</strong></div><div>${r.category||""}</div>
+          <div><strong>Date:</strong></div><div>${r.research_date||""}</div>
+          <div><strong>Keywords:</strong></div><div>${(r.keywords||[]).join(", ")}</div>
+        </div>
+
+        <h4>EXECUTIVE SUMMARY</h4>
+		<p style="text-indent: 50px; text-align: justify;">${r.abstract||""}</p>
+		<br>
+        <button class="download-pdf">Download PDF</button>
+      </div>
+    </div>
+	  `).join("");
+
+	  document.querySelectorAll(".abstract-title").forEach(t=>{
+		t.onclick = () => t.nextElementSibling.style.display =
+		  t.nextElementSibling.style.display === "block" ? "none" : "block";
+	  });
+
+	  // PDF download
+	document.querySelectorAll(".download-pdf").forEach((btn, i) => {
+	  btn.onclick = () => {
+		const { jsPDF } = window.jspdf;
+		const doc = new jsPDF({ unit: "mm", format: "a4" });
+		const r = rows[i];
+
+		let y = 15;
+		const pageWidth = 180;
+
+		// Title
+		doc.setFontSize(18);
+		doc.setFont("helvetica", "bold");
+		const titleLines = doc.splitTextToSize(r.title || "", pageWidth);
+		doc.text(titleLines, 15, y);
+		y += titleLines.length * 7 + 5;
+
+		// Authors
+		doc.setFontSize(12);
+		doc.setFont("helvetica", "normal");
+		const authorsArray = toArray(r.authors);
+		const authorsText = authorsArray.length > 1 ? `${authorsArray[0]} et al.` : authorsArray[0] || "";
+		const authorLines = doc.splitTextToSize(`Authors: ${authorsText}`, pageWidth);
+		doc.text(authorLines, 15, y);
+		y += authorLines.length * 7;
+
+		// Course
+		if(r.course?.length){
+		  const courseLines = doc.splitTextToSize(`Course: ${toArray(r.course).join(", ")}`, pageWidth);
+		  doc.text(courseLines, 15, y);
+		  y += courseLines.length * 7;
+		}
+
+		// Category
+		if(r.category){
+		  const categoryLines = doc.splitTextToSize(`Category: ${r.category}`, pageWidth);
+		  doc.text(categoryLines, 15, y);
+		  y += categoryLines.length * 7;
+		}
+
+		// Date
+		if(r.research_date){
+		  const dateLines = doc.splitTextToSize(`Date: ${r.research_date}`, pageWidth);
+		  doc.text(dateLines, 15, y);
+		  y += dateLines.length * 7;
+		}
+
+		// Keywords
+		if(r.keywords?.length){
+		  const keywordsLines = doc.splitTextToSize(`Keywords: ${(r.keywords || []).join(", ")}`, pageWidth);
+		  doc.text(keywordsLines, 15, y);
+		  y += keywordsLines.length * 7 + 5;
+		}
+
+		// Executive Summary
+		if(r.abstract){
+		  doc.setFontSize(14);
+		  doc.setFont("helvetica", "bold");
+		  doc.text("EXECUTIVE SUMMARY", 15, y);
+		  y += 7;
+
+		  doc.setFontSize(12);
+		  doc.setFont("helvetica", "normal");
+		  const abstractLines = doc.splitTextToSize(r.abstract, pageWidth);
+		  doc.text(abstractLines, 15, y);
+		}
+
+		doc.save(`${r.title || "research"}.pdf`);
+	  };
+	});
+
+	}
+
+	/* ---------- SEARCH ---------- */
+	search.oninput = () => {
+	  filters.text = search.value.toLowerCase();
+	  applyFilters();
+	};
+
+	/* ---------- FILTERS ---------- */
+	function renderYears(data){
+	  const years = [...new Set(data.map(d => d.academic_year).filter(Boolean))];
+	  const container = document.getElementById("year-buttons");
+
+	  container.innerHTML = "";
+
+	  years.forEach(year => {
+		const btn = document.createElement("button");
+		btn.textContent = year;
+		btn.addEventListener("click", () => {
+  // toggle year filter
+  filters.year = filters.year === year ? null : year;
+
+  // update active styles
+  document.querySelectorAll("#year-buttons button")
+    .forEach(b => b.classList.remove("active-filter"));
+
+  if (filters.year === year) {
+    btn.classList.add("active-filter");
+  }
+
+  applyFilters();
+});
+
+
+		container.appendChild(btn);
+	  });
+	}
+
+	function renderKeywords(data){
+	  const m = {};
+	  data.forEach(d => {
+		toArray(d.keywords).forEach(k => {
+		  m[k] = (m[k] || 0) + 1;
+		});
+	  });
+
+	  const container = document.getElementById("keyword-buttons");
+	  container.innerHTML = "";
+
+	  Object.entries(m)
+		.sort((a,b) => b[1]-a[1]) // most used keywords first
+		.slice(0,10)
+		.forEach(([k]) => {
+		  const btn = document.createElement("button");
+		  btn.textContent = k;
+		  btn.addEventListener("click", () => {
+  // toggle keyword filter
+  filters.keyword = filters.keyword === k ? null : k;
+
+  // update active styles
+  document.querySelectorAll("#keyword-buttons button")
+    .forEach(b => b.classList.remove("active-filter"));
+
+  if (filters.keyword === k) {
+    btn.classList.add("active-filter");
+  }
+
+  applyFilters();
+});
+
+		  container.appendChild(btn);
+		});
+	}
+	});
+	</script>
+</html>
