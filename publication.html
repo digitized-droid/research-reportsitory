@@ -550,7 +550,7 @@ document.querySelectorAll(".download-pdf").forEach((btn, i) => {
       let y = headerHeight + 15;
 
       /* ---------- TITLE ---------- */
-      doc.setFontSize(18);
+      doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
       const titleLines = doc.splitTextToSize(r.title || "", contentWidth);
       doc.text(titleLines, marginLeft, y);
@@ -788,6 +788,7 @@ function renderSDGs(data) {
 	});
 	</script>
 </html>
+
 
 
 
