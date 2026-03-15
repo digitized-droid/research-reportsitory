@@ -613,39 +613,6 @@ button.active-filter:focus {
 <script>
 	document.addEventListener("DOMContentLoaded", async () => {
 
-  /* ---------- HELPER FUNCTION: JUSTIFIED TEXT ---------- */
-  function addJustifiedText(doc, text, x, y, maxWidth, lineHeight) {
-    const lines = doc.splitTextToSize(text, maxWidth);
-
-    lines.forEach((line, i) => {
-      if (i < lines.length - 1) {
-        // Justify line
-        const words = line.split(" ");
-        const spaceCount = words.length - 1;
-        if (spaceCount > 0) {
-          const lineWidth = doc.getTextWidth(line);
-          const extraSpace = (maxWidth - lineWidth) / spaceCount;
-
-          let curX = x;
-          words.forEach((word) => {
-            doc.text(word, curX, y);
-            curX += doc.getTextWidth(word) + extraSpace;
-          });
-        } else {
-          doc.text(line, x, y); // single word, no justification
-        }
-      } else {
-        // Last line left-aligned
-        doc.text(line, x, y);
-      }
-
-      y += lineHeight;
-    });
-
-    return y; // return updated y for next section
-  }
-
-
 	const SUPABASE_URL = "https://emakckalouwopodqehgn.supabase.co";
 	const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtYWtja2Fsb3V3b3BvZHFlaGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU1NzA3OTYsImV4cCI6MjA4MTE0Njc5Nn0.eRQMLCrL4xEb58ap8RKTOyJx8pusfbr8Ut037GpYXfk";
 	const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -967,7 +934,30 @@ if (r.abstract) {
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
 
-    y = addJustifiedText(doc, r.abstract, marginLeft, y, contentWidth, 7);
+    const pageMargin = marginLeft;
+    const textWidth = contentWidth;
+
+    // Use the full text, no splitting into lines
+    const abstractText = r.abstract;
+
+    // Add text with justification
+    const splitText = doc.splitTextToSize(abstractText, textWidth); // optional, but preserves wrapping
+    splitText.forEach((line, index) => {
+        if (y > pageHeight - 15) {
+            doc.addPage();
+            addHeader();
+            y = headerHeight + 15;
+        }
+
+        // justify all lines except last
+        if (index < splitText.length - 1) {
+            doc.text(line, pageMargin, y, { maxWidth: textWidth, align: 'justify' });
+        } else {
+            doc.text(line, pageMargin, y, { maxWidth: textWidth, align: 'left' });
+        }
+
+        y += 7;
+    });
 }
 
       doc.save(`${r.title || "research"}.pdf`);
