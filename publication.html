@@ -913,26 +913,17 @@ document.querySelectorAll(".download-pdf").forEach((btn, i) => {
         y += lines.length * lineSpacing + 5;
       }
 
-     /* ---------- KEYWORDS ---------- */
-if (r.keywords?.length) {
-  doc.setFont("helvetica", "bold");
-  doc.text("Keywords:", labelX, y);
+      /* ---------- KEYWORDS ---------- */
+      if (r.keywords?.length) {
+        doc.setFont("helvetica", "bold");
+        doc.text("Keywords:", labelX, y);
 
-  doc.setFont("helvetica", "normal");
-  const keywordText = (r.keywords || []).join(", ");
-  const lines = doc.splitTextToSize(keywordText, contentWidth - (valueX - marginLeft));
+        doc.setFont("helvetica", "normal");
+        const lines = doc.splitTextToSize((r.keywords || []).join(", "), contentWidth - 35);
+        doc.text(lines, valueX, y);
+        y += lines.length * lineSpacing + 5;
+      }
 
-  lines.forEach(line => {
-    if (y > pageHeight - 15) {
-      doc.addPage();
-      addHeader();
-      y = headerHeight + 15;
-    }
-    doc.text(line, valueX, y);
-    y += lineSpacing;
-  });
-  y += 5; // extra space after keywords
-}
       /* ---------- EXECUTIVE SUMMARY ---------- */
       if (r.abstract) {
 
