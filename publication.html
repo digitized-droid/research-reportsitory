@@ -536,6 +536,52 @@ button.filter-btn{
     display:none;
   }
 }
+
+/* DROPDOWN MENU */
+.dropdown{
+  position:relative;
+}
+
+.dropdown-menu{
+  display:none;
+  position:absolute;
+  top:100%;
+  left:0;
+  background:white;
+  min-width:200px;
+  list-style:none;
+  padding:8px 0;
+  border-radius:6px;
+  box-shadow:0 6px 15px rgba(0,0,0,0.15);
+  z-index:1000;
+}
+
+.dropdown-menu li{
+  width:100%;
+}
+
+.dropdown-menu a{
+  display:block;
+  padding:10px 16px;
+  color:#1e3a8a;
+  text-decoration:none;
+  font-size:0.95rem;
+}
+
+.dropdown-menu a:hover{
+  background:#f3f4f6;
+  color:#fbbf24;
+}
+
+/* show dropdown on hover (desktop) */
+.dropdown:hover .dropdown-menu{
+  display:block;
+}
+
+/* remove underline animation inside dropdown */
+.dropdown-menu a::after{
+  display:none;
+}
     </style>
 </head>
 <header>
@@ -543,11 +589,20 @@ button.filter-btn{
         <img src="ursm logo.png" alt="URS Logo" class="myImage">
         <nav>
            <ul class="nav-menu" id="nav-menu">
-                <li><a href="index.html">Home</a></li>
-				<li><a href="about.html">About</a></li>
-                <li><a href="publication.html">Collection</a></li>
-                <li><a href="inquire.html">Contact</a></li>
-            </ul>
+    <li><a href="index.html">Home</a></li>
+
+    <li class="dropdown">
+      <a href="#" class="dropdown-toggle">About</a>
+      <ul class="dropdown-menu">
+        <li><a href="abouturs.html">About URS</a></li>
+        <li><a href="aboutlibrary.html">About Library</a></li>
+        <li><a href="aboutresearchers.html">About Researchers</a></li>
+      </ul>
+    </li>
+
+    <li><a href="publication.html">Collection</a></li>
+    <li><a href="inquire.html">Contact</a></li>
+</ul>
         </nav>
     </div>
 </header>
@@ -612,7 +667,24 @@ button.filter-btn{
   </footer>
 <script>
 	document.addEventListener("DOMContentLoaded", async () => {
+	
+	const dropdownToggle = document.querySelector(".dropdown-toggle");
+const dropdownMenu = document.querySelector(".dropdown-menu");
 
+if(dropdownToggle){
+  dropdownToggle.addEventListener("click", function(e){
+
+    if(window.innerWidth <= 900){
+      e.preventDefault();
+
+      dropdownMenu.style.display =
+        dropdownMenu.style.display === "block"
+        ? "none"
+        : "block";
+    }
+
+  });
+}
 	const SUPABASE_URL = "https://emakckalouwopodqehgn.supabase.co";
 	const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtYWtja2Fsb3V3b3BvZHFlaGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU1NzA3OTYsImV4cCI6MjA4MTE0Njc5Nn0.eRQMLCrL4xEb58ap8RKTOyJx8pusfbr8Ut037GpYXfk";
 	const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
