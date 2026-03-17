@@ -292,6 +292,29 @@
   display:none;
 }
 
+/* Styled placeholder */
+.contact-form input::placeholder,
+.contact-form textarea::placeholder {
+  font-style: italic;
+  color: #9ca3af; /* soft gray */
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+/* On focus: fade + slide effect */
+.contact-form input:focus::placeholder,
+.contact-form textarea:focus::placeholder {
+  opacity: 0.4;
+  transform: translateX(5px);
+}
+
+/* Optional: smooth input focus styling */
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
 
   </style>
 </head>
