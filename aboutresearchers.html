@@ -201,21 +201,66 @@
 
     section { padding: 2rem 0; }
 
-    .floating-strip {
-      width: min(var(--max), calc(100% - 2rem));
-      margin: auto;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-    }
+.floating-strip {
+  width: min(var(--max), calc(100% - 2rem));
+  margin: -60px auto 2rem; /* lift it slightly into hero */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+}
 
-    .strip-card {
-      background: var(--white);
-      border-radius: 22px;
-      padding: 1.2rem;
-      box-shadow: var(--shadow-soft);
-      border: 1px solid rgba(15,47,107,0.06);
-    }
+.strip-card {
+  position: relative;
+  padding: 1.6rem 1.4rem;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #ffffff, #f8fbff);
+  box-shadow: 0 12px 30px rgba(15, 47, 107, 0.12);
+  border: 1px solid rgba(15,47,107,0.06);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* top accent line */
+.strip-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 5px;
+  width: 100%;
+  background: linear-gradient(90deg, var(--royal), var(--gold));
+}
+
+/* hover effect */
+.strip-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(15, 47, 107, 0.18);
+}
+
+/* title */
+.strip-card strong {
+  display: block;
+  font-size: 1.2rem;
+  color: var(--navy);
+  margin-bottom: 0.5rem;
+}
+
+/* description */
+.strip-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+/* optional icon circle */
+.strip-card::after {
+  content: "★";
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  font-size: 1.6rem;
+  color: rgba(29, 78, 216, 0.12);
+}
 
     .section-head {
       text-align: center;
@@ -491,7 +536,7 @@
   </header>
 
   <section class="hero-section">
-     <img src="researchers1.jpg" class="campus" alt="URSM Campus" />
+     <img src="researchersuni.jpg" class="campus" alt="URSM Campus" />
     <div class="hero-shade"></div>
     <div class="hero-content">
       <div class="hero-copy">
