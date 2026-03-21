@@ -476,54 +476,66 @@
 
   <!-- EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
 <script>
-	
-// Dropdown toggle for click
 document.addEventListener("DOMContentLoaded", () => {
+
+  /* =========================
+     DROPDOWN (SAFE)
+  ========================= */
   const dropdownToggle = document.querySelector(".dropdown-toggle");
-const dropdownMenu = document.querySelector(".dropdown-menu");
+  const dropdownMenu = document.querySelector(".dropdown-menu");
 
-if(dropdownToggle){
-  dropdownToggle.addEventListener("click", function(e){
+  if (dropdownToggle && dropdownMenu) {
+    dropdownToggle.addEventListener("click", function (e) {
+      if (window.innerWidth <= 900) {
+        e.preventDefault();
+        dropdownMenu.style.display =
+          dropdownMenu.style.display === "block" ? "none" : "block";
+      }
+    });
+  }
 
-    if(window.innerWidth <= 900){
+  /* =========================
+     EMAILJS INIT
+  ========================= */
+  emailjs.init("m5SJXzeZZLdZCC2ss"); // Your Public Key
+
+  /* =========================
+     FORM SUBMIT
+  ========================= */
+  const contactForm = document.getElementById("contactForm");
+
+  if (contactForm) {
+    contactForm.addEventListener("submit", function (e) {
       e.preventDefault();
 
-      dropdownMenu.style.display =
-        dropdownMenu.style.display === "block"
-        ? "none"
-        : "block";
-    }
+      const formData = {
+        name: this.querySelector('[name="name"]').value,
+        email: this.querySelector('[name="email"]').value,
+        message: this.querySelector('[name="message"]').value,
+        company: "University of Rizal System"
+      };
 
-  });
-}
-    emailjs.init("m5SJXzeZZLdZCC2ss"); // Your Public Key
-
-    document.getElementById("contactForm").addEventListener("submit", function(e) {
-        e.preventDefault();
-
-        // Collect form data
-        const formData = {
-            name: this.name.value,
-            email: this.email.value,
-            message: this.message.value,
-            company: "University of Rizal System" // fixed value for [Company Name]
-        };
-
-        emailjs.send("service_7lwcg4o", "template_y9lm1yi", formData)
-            .then(() => {
-                alert("Your message has been sent!");
-                this.reset();
-            })
-            .catch((error) => {
-                console.error("EmailJS error:", error);
-                alert("Failed to send message. Check console for details.");
-            });
+      emailjs.send("service_7lwcg4o", "template_y9lm1yi", formData)
+        .then(() => {
+          alert("Your message has been sent!");
+          contactForm.reset();
+        })
+        .catch((error) => {
+          console.error("EmailJS FULL ERROR:", error);
+          alert("Failed to send message. Check console for details.");
+        });
     });
-    /* SAME HAMBURGER SCRIPT */
-    const hamburger = document.getElementById("hamburger");
-    const navMenu = document.getElementById("nav-menu");
+  }
 
+  /* =========================
+     HAMBURGER (SAFE)
+  ========================= */
+  const hamburger = document.getElementById("hamburger");
+  const navMenu = document.getElementById("nav-menu");
+
+  if (hamburger && navMenu) {
     hamburger.addEventListener("click", () => {
       hamburger.classList.toggle("active");
       navMenu.classList.toggle("active");
@@ -535,8 +547,11 @@ if(dropdownToggle){
         navMenu.classList.remove("active");
       });
     });
+  }
 
+});
 </script>
+
 
 </body>
 
