@@ -525,7 +525,7 @@
     <div class="brand"><img src="ursm logo.png" alt="URS Logo" class="myImage"></div>
     <nav>
       <ul class="nav-menu">
-        <li><a href="index.html">Home</a></li>
+        <li><a href="home.html">Home</a></li>
         <li class="dropdown"><a href="#" class="dropdown-toggle">About</a>
           <ul class="dropdown-menu">
             <li><a href="abouturs.html">About URS</a></li>
@@ -692,26 +692,34 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   // =========================
   // LOAD USER
   // =========================
-  async function loadUser(userId = null) {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    const user = userId || (session && session.user && session.user.id);
+async function loadUser(userId=null){
+  const { data:{ session } } = await supabaseClient.auth.getSession();
+  const user = userId || (session && session.user && session.user.id);
 
-    if (user) {
-      const { data: profile } = await supabaseClient
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user)
-        .single();
+  if(user){
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user)
+      .single();
 
-      userInfo.textContent = profile?.display_name || "Unknown";
-      logoutBtn.style.display = "block";
-      authModal.style.display = "none";
-    } else {
-      userInfo.textContent = "Not logged in";
-      logoutBtn.style.display = "none";
-      authModal.style.display = "flex";
+    // ✅ ROLE CHECK (IMPORTANT PART)
+    if(!profile || (profile.role !== "user" && profile.role !== "admin")){
+      window.location.href = "index.html"; // silent redirect
+      return;
     }
+
+    // If allowed
+    
+userInfo.textContent = `Hello, ${profile?.display_name || "User"}`;
+    logoutBtn.style.display="block";
+    authModal.style.display="none";
+
+  } else {
+    // Not logged in → redirect instantly
+    window.location.href = "index.html";
   }
+}
 
   // =========================
   // AUTH SUBMIT
