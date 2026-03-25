@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URSM Library</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+.myImage {
+            height: 60px;
+        }
+        :root {
+            --primary-blue: #003366;
+            --secondary-blue: #00509d;
+            --accent-yellow: #ffcc00;
+            --soft-white: #f8f9fa;
+            --text-dark: #212529;
+            --text-gray: #6c757d;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --gradient: linear-gradient(135deg, #003366 0%, #00509d 100%);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--soft-white);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* --- Header & Navigation --- */
+        header {
+            background: #1e3a8a;
+            color: white;
+            padding: 1rem 5%;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+	
+	/* Footer */
+    footer {
+      background: #1e3a8a;
+      color: #ffffff;
+      text-align: center;
+      padding: 2.5rem 2rem;
+      margin-top: 4rem;
+    }
+
+    footer p {
+      margin: 0;
+      opacity: 0.9;
+    }
+
+    .footer-accent {
+      color: #fbbf24;
+      font-weight: bold;
+    }
+
+/* ---------------- MAIN LAYOUT ---------------- */
+
+#main-content {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 2rem;
+    align-items: start;
+}
+
+#upload-form-container,
+#research-list {
+    grid-column: 1;
+}
+
+#sidebar {
+    grid-column: 2;
+}
+
+/* ---------------- HEADINGS ---------------- */
+
+h1 {
+    font-size: 2rem;
+    color: var(--primary-blue);
+    margin-bottom: 1.5rem;
+    border-left: 5px solid var(--accent-yellow);
+    padding-left: 15px;
+}
+
+/* ---------------- RESEARCH CARDS ---------------- */
+
+.abstract-page {
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid #e9ecef;
+    transition: transform 0.2s;
+}
+
+.abstract-page:hover {
+    transform: translateY(-3px);
+}
+
+.abstract-title {
+    padding: 1.5rem;
+    background: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--primary-blue);
+    display: flex;
+    flex-direction: column;
+}
+
+.abstract-meta {
+    font-size: 0.85rem;
+    color: var(--text-gray);
+    margin-top: 5px;
+}
+
+.abstract-content {
+    display: none;
+    padding: 1.5rem;
+    border-top: 1px solid #eee;
+    background: #fcfcfc;
+	text-align: justify;
+}
+
+.meta-grid {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 10px;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ---------------- DOWNLOAD BUTTON ---------------- */
+
+.download-pdf {
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.download-pdf:hover {
+    background: var(--accent-yellow);
+    color: var(--primary-blue);
+}
+
+/* ---------------- SIDEBAR ---------------- */
+
+#sidebar {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+#search {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #eee;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    outline: none;
+}
+
+#search:focus {
+    border-color: var(--secondary-blue);
+}
+
+#sidebar h3 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: var(--primary-blue);
+    border-bottom: 2px solid var(--accent-yellow);
+    display: inline-block;
+}
+
+/* ---------------- GLOBAL BUTTON STYLE ---------------- */
+/* Excludes edit & delete so they are not overridden */
+
+button:not(.download-pdf):not(.hamburger):not(.edit-btn):not(.delete-btn) {
+    background: #f0f2f5;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+button:not(.download-pdf):not(.hamburger):not(.edit-btn):not(.delete-btn):hover {
+    background: var(--secondary-blue);
+    color: white;
+}
+
+/* ---------------- FILTER BUTTON GROUPS ---------------- */
+
+#year-buttons,
+#keyword-buttons,
+#sdg-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+#sdg-buttons button {
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+}
+
+/* Active filter */
+
+button.active-filter,
+button.active-filter:hover,
+button.active-filter:focus {
+    background-color: #FFEF5F;
+    color: #1e3a8a;
+    font-weight: 600;
+}
+
+/* ---------------- UPLOAD FORM ---------------- */
+
+#upload-form-container {
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+#toggle-upload {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #bbb;
+    background: #e0e0e0;   /* Grey */
+    color: #000;           /* Black text */
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 6px 6px 0 0;
+    transition: background 0.2s ease;
+}
+
+#toggle-upload:hover {
+    background: #cfcfcf;   /* Slightly darker grey */
+}
+
+#uploadFormWrapper {
+    display: none;
+    padding: 10px;
+}
+
+#uploadForm input,
+#uploadForm textarea {
+    width: 100%;
+    padding: 6px;
+    margin: 4px 0;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+#uploadForm label {
+    font-weight: bold;
+    margin-top: 8px;
+    display: block;
+}
+
+#uploadForm > button {
+    background: #e0e0e0;   /* Grey */
+    color: #000;           /* Black text */
+    padding: 8px 12px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    margin-top: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s ease;
+}
+
+#uploadForm > button:hover {
+    background: #cfcfcf;
+}
+/* ---------------- EDIT & DELETE BUTTONS ---------------- */
+
+button.edit-btn {
+    margin-top: 10px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    background: #1976d2;
+    color: white;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+button.edit-btn:hover {
+    background: #125aa0;
+}
+
+button.delete-btn {
+    margin-top: 10px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    background: #d32f2f;
+    color: white;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+button.delete-btn:hover {
+    background: #9a2424;
+}
+
+/* ---------------- EDIT MODAL ---------------- */
+
+.editmodal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.editmodal-body {
+    background: #fff;
+    border-radius: 12px;
+    width: 95vw;
+    height: 95vh;
+    padding: 20px 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    font-family: Arial, sans-serif;
+    overflow-y: auto;
+}
+
+#editForm input,
+#editForm textarea {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+#editForm .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+#editForm .form-actions button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+#editForm .form-actions button.save {
+    background: #1976d2;
+    color: white;
+}
+
+#editForm .form-actions button.save:hover {
+    background: #125aa0;
+}
+
+#editForm .form-actions button.cancel {
+    background: #ccc;
+    color: #333;
+}
+
+#editForm .form-actions button.cancel:hover {
+    background: #aaa;
+}
+	  /* --- Responsive --- */
+      @media (max-width: 900px) {
+
+  #main-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #sidebar {
+    order: -1;          /* Move sidebar to top */
+    position: static;   /* Remove sticky behavior */
+    width: 100%;
+    max-height: none;
+  }
+
+  #upload-form-container,
+  #research-list {
+    width: 100%;
+  }
+
+  .header-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  #downloadReport {
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+    font-size: 0.9rem;
+    border-radius: 6px;
+}
+}
+
+
+button.active-filter,
+button.active-filter:hover,
+button.active-filter:focus {
+    background-color: #1e3a8a;
+    color:  #FF8C00;
+    font-weight: 600;
+}
+#logoutBtn {
+  background: #ffffff;
+  color: #1e3a8a;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+#logoutBtn:hover {
+  background: #ffcc00;
+}
+</style>
+</head>
+<header>
+    <div class="header-container">
+    <img src="ursm logo.png" alt="URS Logo" class="myImage">
+    <h4>Admin</h4>
+
+    <!-- ✅ ADD THIS -->
+    <button id="logoutBtn" style="margin-left:auto;">Logout</button>
+</div>
+</header>
+<body>
+<br>
+
+<!-- Edit Modal (hidden by default) -->
+<div id="editModal" class="editmodal">
+  <div class="editmodal-body">
+    <h3>Edit Research</h3>
+    <form id="editForm">
+      <label>Title</label>
+      <input type="text" id="editTitle" required>
+	  
+	  <label>SDG</label>
+	  <input type="text" id="editSDG">
+
+      <label>Authors (comma separated)</label>
+      <input type="text" id="editAuthors">
+	  
+	  <label>Advisers</label>
+	  <input type="text" id="editAdvisers">
+
+      <label>Course</label>
+      <input type="text" id="editCourse">
+
+      <label>Academic Year</label>
+      <input type="text" id="editYear">
+
+      <label>Research Date</label>
+      <input type="text" id="editDate">
+
+      <label>Abstract</label>
+      <textarea id="editAbstract" rows="6"></textarea>
+
+      <label>Keywords (comma separated)</label>
+      <input type="text" id="editKeywords">
+
+      <div class="form-actions">
+        <button type="submit" class="save">Save</button>
+        <button type="button" id="cancelEdit" class="cancel">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<main>
+
+  <!-- LEFT + RIGHT CONTAINER -->
+  <div id="main-content">
+
+    <!-- LEFT SIDE (Upload + Research Together) -->
+    <div>
+
+      <div id="upload-form-container">
+        <button id="toggle-upload">Upload Research ▼</button>
+        <div id="uploadFormWrapper">
+          <form id="uploadForm">
+            <label>Title</label>
+            <input type="text" id="title" required>
+            
+            <label>SDG</label>
+            <input type="text" id="sdg" placeholder="e.g, SDG 4 - Quality Education">
+            
+            <label>Authors (comma separated)</label>
+            <input type="text" placeholder="e.g., Person A, Person B...etc" id="authors">
+
+            <label>Advisers (comma separated)</label>
+            <input type="text" id="advisers" placeholder="e.g, Juan Dela Cruz, Maria Santos">
+
+            <label>Course</label>
+            <input type="text" placeholder="e.g., Bachelor of......" id="course">
+
+            <label>Major</label>
+            <input type="text" placeholder="e.g., Information Communication Technology" id="major">
+
+            <label>Academic Year</label>
+            <input type="text" id="academic_year" placeholder="e.g., 2020-2021">
+
+            <label>Research Date (Month Year)</label>
+            <input type="text" id="research_date" placeholder="e.g., July 2021">
+
+            <label>Abstract</label>
+            <textarea id="abstract" rows="4"></textarea>
+
+            <label>Keywords (comma separated)</label>
+            <input type="text" id="keywords" placeholder="e.g., Key, Words">
+
+            <label>Upload Password</label>
+            <input type="password" id="upload_password" placeholder="Enter password" required>
+
+            <button type="submit">Upload</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Research List -->
+      <div id="research-list">Loading…</div>
+
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div id="sidebar">
+      <input type="text" id="search" placeholder="Search by title, author, keyword...">
+      
+      <h3>Filter by Year</h3>
+      <div id="year-buttons"></div>
+
+      <h3>Filter by SDG</h3>
+      <div id="sdg-buttons"></div>
+      <br>
+
+      <details>
+        <summary><h3>Top Keywords</h3></summary>
+        <div id="keyword-buttons"></div>
+      </details>
+
+      <button id="clear-filters" class="clearbtn">Clear Filters</button>
+
+<br><br>
+
+<button id="downloadReport" class="download-pdf" style="width:100%;">
+  Download Collection Report (PDF)
+</button>
+    </div>
+
+  </div>
+
+</main>
+<!-- FOOTER (unchanged) -->
+  <footer>
+    <p>© 2025 <span class="footer-accent">University of Rizal System Morong Campus Library</span>. All rights reserved.</p>
+  </footer>
+<script>
+
+
+
+const SUPABASE_URL = "https://emakckalouwopodqehgn.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtYWtja2Fsb3V3b3BvZHFlaGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU1NzA3OTYsImV4cCI6MjA4MTE0Njc5Nn0.eRQMLCrL4xEb58ap8RKTOyJx8pusfbr8Ut037GpYXfk";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Hide page immediately
+document.documentElement.style.display = "none";
+
+async function enforceAdmin() {
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    // ❌ Not logged in → instant redirect
+    if (!session) {
+      window.location.href = "index.html";
+      return;
+    }
+
+    const { data: profile } = await supabaseClient
+      .from("profiles")
+      .select("role")
+      .eq("user_id", session.user.id)
+      .single();
+
+    // ❌ Not admin → instant redirect
+    if (!profile || profile.role !== "admin") {
+      window.location.href = "index.html";;
+      return;
+    }
+
+    // ✅ Authorized → show page
+    document.documentElement.style.display = "block";
+
+  } catch (err) {
+    // Fail-safe redirect (no alerts)
+    window.location.href = "index.html";;
+  }
+}
+  
+// RUN IMMEDIATELY
+enforceAdmin();
+
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+  // ✅ ADD THIS AT THE TOP (or anywhere inside)
+  document.getElementById("logoutBtn").addEventListener("click", async () => {
+    await supabaseClient.auth.signOut();
+    window.location.href = "index.html";
+  });
+
+const list = document.getElementById("research-list");
+const search = document.getElementById("search");
+let dataCache = [];
+const clearFiltersBtn = document.getElementById("clear-filters");
+clearFiltersBtn.onclick = () => {
+
+  filters.text = "";
+  filters.year = null;
+  filters.sdg = null;
+  filters.keyword = null;
+  filters.date = null;
+
+  search.value = "";
+
+  document.querySelectorAll(".active-filter")
+    .forEach(b => b.classList.remove("active-filter"));
+
+  applyFilters();
+};
+
+/* ---------- HELPERS ---------- */
+const filters = {
+  text: "",
+  year: null,
+  sdg: null,
+  keyword: null,
+  date: null
+};
+const asText = v => {
+  if (!v) return "";
+  if (Array.isArray(v)) return v.join(", ");
+  return String(v);
+};
+
+const toArray = v =>
+  Array.isArray(v)
+    ? v
+    : typeof v === "string"
+      ? v.split(/[\n,]/).map(x => x.trim()).filter(Boolean)
+      : [];
+
+const firstAuthor = a =>
+  Array.isArray(a) && a.length ? a[0] + (a.length>1 ? " et al." : "") : a || "";
+  
+const toKeywordArray = v => {
+  if (!v) return [];
+  if (Array.isArray(v)) return v.map(k => k.toString().trim()).filter(Boolean);
+  if (typeof v === "string") return v.split(",").map(k => k.trim()).filter(Boolean);
+  return [];
+};
+const toSDGArray = v => {
+  if (!v) return [];
+  if (Array.isArray(v)) return v.map(s => s.trim()).filter(Boolean);
+
+  return v
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean);
+};
+
+
+/* ---------- LOAD ---------- */
+async function load() {
+  const { data, error } = await supabaseClient
+    .from("researches")
+    .select("*")
+    .order("created_at",{ascending:false});
+
+  if (error) {
+    list.textContent = error.message;
+    return;
+  }
+
+ dataCache = data || [];
+
+/* reset filters */
+filters.text = "";
+filters.year = null;
+filters.sdg = null;
+filters.keyword = null;
+filters.date = null;
+search.value = "";
+
+render(dataCache);
+renderYears(dataCache);
+renderSDGs(dataCache);
+renderKeywords(dataCache);
+
+}
+await load();
+
+/* ---------- RENDER ---------- */
+function applyFilters() {
+  const q = filters.text.toLowerCase();
+
+  const filtered = dataCache.filter(r => {
+
+    const matchText =
+  !q ||
+  r.title?.toLowerCase().includes(q) ||
+  toArray(r.authors).join(" ").toLowerCase().includes(q) ||
+  toArray(r.advisers).join(" ").toLowerCase().includes(q) ||
+  toKeywordArray(r.keywords).some(k => k.toLowerCase().includes(q)) ||
+  asText(asText(r.sdg)
+)
+?.toLowerCase().includes(q) ||
+  r.research_date?.toLowerCase().includes(q);
+
+
+    const matchYear =
+  !filters.year ||
+  (r.research_date && r.research_date.includes(filters.year));
+
+const matchSDG =
+  !filters.sdg ||
+  toSDGArray(r.sdg).some(s =>
+    s.toLowerCase() === filters.sdg.toLowerCase()
+  );
+
+
+    const matchKeyword =
+  !filters.keyword ||
+  toKeywordArray(r.keywords).some(k =>
+    k.toLowerCase().includes(filters.keyword.toLowerCase())
+  );
+
+
+
+    const matchDate =
+      !filters.date || r.research_date === filters.date;
+
+    return matchText && matchYear && matchSDG && matchKeyword && matchDate;
+  });
+
+  render(filtered);
+}
+
+function render(rows) {
+  if (!rows.length) {
+    list.textContent = "No research found.";
+    return;
+  }
+
+  list.innerHTML = rows.map(r=>`
+    <div class="abstract-page">
+      <div class="abstract-title">
+        ${r.title}
+        <div class="abstract-meta">${firstAuthor(r.authors)} — ${r.academic_year||"—"}</div>
+      </div>
+
+      <div class="abstract-content">
+       <div class="meta-grid">
+  <div>Authors</div>
+  <div>${toArray(r.authors).join("<br>")}</div>
+
+  <div>Advisers</div>
+  <div>${toArray(asText(r.advisers)).join("<br>")
+}</div>
+
+  <div>Course</div>
+  <div>${toArray(r.course).join("<br>")}</div>
+
+  <div>SDG</div>
+  <div>${toSDGArray(r.sdg).join(", ")}</div>
+
+  <div>Date</div>
+  <div>${r.research_date||""}</div>
+
+  <div>Keywords</div>
+  <div>${toKeywordArray(r.keywords).join(", ")}</div>
+</div>
+
+
+        <p><strong>EXECUTIVE SUMMARY</strong><br>${r.abstract||""}</p>
+
+        <button class="delete-btn" onclick="del(${JSON.stringify(r.id)})">Delete</button>
+		<button class="edit-btn" onclick="editResearch(${JSON.stringify(r.id)})">Edit</button>
+      </div>
+    </div>
+  `).join("");
+
+  document.querySelectorAll(".abstract-title").forEach(t=>{
+    t.onclick=()=>t.nextElementSibling.style.display =
+      t.nextElementSibling.style.display==="block"?"none":"block";
+  });
+}
+
+/* ---------- SEARCH ---------- */
+search.oninput = () => {
+  filters.text = search.value;
+  applyFilters();
+};
+
+
+/* ---------- FILTERS ---------- */
+function renderYears(data){
+  const years = [
+    ...new Set(
+      data
+        .map(d => {
+          if (!d.research_date) return null;
+
+          // Extract 4-digit year (ex: 2021 from "July 2021")
+          const match = d.research_date.match(/\b\d{4}\b/);
+          return match ? match[0] : null;
+        })
+        .filter(Boolean)
+    )
+  ].sort((a,b) => b - a);
+
+  const container = document.getElementById("year-buttons");
+  container.innerHTML = "";
+
+  years.forEach(year => {
+    const btn = document.createElement("button");
+    btn.textContent = year;
+
+    btn.onclick = () => {
+
+  if (filters.year === year) {
+    filters.year = null;
+    btn.classList.remove("active-filter");
+  } else {
+    filters.year = year;
+
+    document.querySelectorAll("#year-buttons button")
+      .forEach(b => b.classList.remove("active-filter"));
+
+    btn.classList.add("active-filter");
+  }
+
+  applyFilters();
+};
+
+    container.appendChild(btn);
+  });
+}
+
+function renderSDGs(data){
+  const m = {};
+
+  data.forEach(d => {
+    toSDGArray(d.sdg).forEach(s => {
+      m[s] = (m[s] || 0) + 1;
+    });
+  });
+
+  const container = document.getElementById("sdg-buttons");
+  container.innerHTML = "";
+
+  Object.keys(m)
+    .sort((a,b)=>{
+      const numA = parseInt(a.match(/\d+/)?.[0] || 0);
+      const numB = parseInt(b.match(/\d+/)?.[0] || 0);
+      return numA - numB; // ascending order
+    })
+    .forEach(sdg=>{
+      const btn = document.createElement("button");
+      btn.textContent = sdg;
+
+      btn.onclick = () => {
+
+  if (filters.sdg === sdg) {
+    filters.sdg = null;
+    btn.classList.remove("active-filter");
+  } else {
+    filters.sdg = sdg;
+
+    document.querySelectorAll("#sdg-buttons button")
+      .forEach(b => b.classList.remove("active-filter"));
+
+    btn.classList.add("active-filter");
+  }
+
+  applyFilters();
+};
+
+      container.appendChild(btn);
+    });
+}
+
+ function renderKeywords(data) {
+  const m = {};
+
+  data.forEach(d => {
+    toKeywordArray(d.keywords).forEach(k => {
+      m[k] = (m[k] || 0) + 1;
+    });
+  });
+
+  const container = document.getElementById("keyword-buttons");
+  container.innerHTML = "";
+
+  Object.entries(m)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .forEach(([k]) => {
+      const btn = document.createElement("button");
+      btn.textContent = k;
+
+      btn.onclick = () => {
+
+  if (filters.keyword === k) {
+    filters.keyword = null;
+    btn.classList.remove("active-filter");
+  } else {
+    filters.keyword = k;
+
+    document.querySelectorAll("#keyword-buttons button")
+      .forEach(b => b.classList.remove("active-filter"));
+
+    btn.classList.add("active-filter");
+  }
+
+  applyFilters();
+};
+
+      container.appendChild(btn);
+    });
+}
+
+/* ---------- COLLAPSIBLE FORM ---------- */
+const toggleBtn = document.getElementById("toggle-upload");
+const formWrapper = document.getElementById("uploadFormWrapper");
+
+toggleBtn.onclick = () => {
+  const visible = formWrapper.style.display === "block";
+  formWrapper.style.display = visible ? "none" : "block";
+  toggleBtn.textContent = visible ? "Upload Research ▼" : "Upload Research ▲";
+};
+
+/* ---------- DOWNLOAD Collection REPORT ---------- */
+document.getElementById("downloadReport").onclick = () => {
+
+  // Use currently filtered data
+  const q = filters.text.toLowerCase();
+
+  const filtered = dataCache.filter(r => {
+
+    const matchText =
+      !q ||
+      r.title?.toLowerCase().includes(q) ||
+      toArray(r.authors).join(" ").toLowerCase().includes(q);
+
+    const matchYear =
+      !filters.year ||
+      (r.research_date && r.research_date.includes(filters.year));
+
+    const matchSDG =
+      !filters.sdg ||
+      asText(r.sdg)?.toLowerCase().includes(filters.sdg?.toLowerCase());
+
+    const matchKeyword =
+      !filters.keyword ||
+      toKeywordArray(r.keywords).some(k =>
+        k.toLowerCase().includes(filters.keyword.toLowerCase())
+      );
+
+    return matchText && matchYear && matchSDG && matchKeyword;
+  });
+
+  if (!filtered.length) {
+    alert("No data available to export.");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+const doc = new jsPDF({ orientation: "landscape" });
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.text("URSM Library Research Collection Report", 14, 15);
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text("Generated on: " + new Date().toLocaleDateString(), 14, 22);
+doc.setFont("helvetica", "bold");
+doc.text("Total Research Records: " + filtered.length, 14, 28);
+  const tableData = filtered.map(r => {
+
+    // First author only + et al
+    let authorsArr = toArray(r.authors);
+    let formattedAuthor = authorsArr.length
+      ? authorsArr[0].split(" ")[0] + (authorsArr.length > 1 ? " et al." : "")
+      : "";
+
+    // Convert academic year to just year
+    let yearOnly = "";
+    if (r.academic_year) {
+      const match = r.academic_year.match(/\b\d{4}\b/);
+      yearOnly = match ? match[0] : r.academic_year;
+    }
+
+    return [
+      r.title || "",
+      formattedAuthor,
+      toArray(r.advisers)[0] || "",
+      r.course || "",
+      toSDGArray(r.sdg).join(", "),
+      r.research_date || "",
+      yearOnly
+    ];
+  });
+
+  doc.autoTable({
+    head: [[
+      "Thesis Title",
+      "Authors",
+      "Adviser",
+      "Course",
+      "SDG",
+      "Research Date",
+      "Year"
+    ]],
+    body: tableData,
+    startY: 34,
+    theme: "grid",
+    styles: {
+      fontSize: 9,
+      cellPadding: 4,
+      valign: "middle"
+    },
+    headStyles: {
+      fillColor: [240, 240, 240],
+      textColor: 0,
+      fontStyle: "bold"
+    },
+    alternateRowStyles: {
+      fillColor: [250, 250, 250]
+    },
+    tableLineColor: [200, 200, 200],
+    tableLineWidth: 0.3
+  });
+
+  doc.save("URSM_Research_Collection_Report.pdf");
+};
+/* ---------- PASSWORD PROTECTION ---------- */
+
+const uploadForm = document.getElementById("uploadForm");
+
+uploadForm.onsubmit = async e =>{
+  e.preventDefault();
+
+  const password = document.getElementById("upload_password").value.trim();
+
+const valid = await verifyPassword(password);
+if (!valid) {
+  alert("Incorrect password! Upload denied.");
+  return;
+}
+
+  const title = document.getElementById("title").value.trim();
+ const sdg = toSDGArray(document.getElementById("sdg").value);
+  const authors = document.getElementById("authors").value
+    .split(",").map(a=>a.trim()).filter(Boolean).join("\n");
+  const advisers = document.getElementById("advisers").value
+  .split(",").map(a=>a.trim()).filter(Boolean).join("\n");
+  const course = document.getElementById("course").value.trim();
+  const major = document.getElementById("major").value.trim();
+  const academic_year = document.getElementById("academic_year").value.trim();
+  const research_date = document.getElementById("research_date").value.trim();
+  const abstract = document.getElementById("abstract").value.trim();
+  const keywords = document.getElementById("keywords").value
+    .split(",").map(k=>k.trim()).filter(Boolean);
+
+  const combinedCourse = course + (major ? "\nMajor in " + major : "");
+
+  const { data, error } = await supabaseClient.from("researches").insert([{
+    title,
+	sdg,
+    authors,
+	advisers,
+    course: combinedCourse,
+    academic_year,
+    research_date,
+    abstract,
+    keywords
+  }]);
+
+  if (error) alert(error.message);
+  else {
+    alert("Research uploaded successfully!");
+    uploadForm.reset();
+    load();
+  }
+};
+async function verifyPassword(inputPassword) {
+  const { data, error } = await supabaseClient
+    .from("admin_password")
+    .select("password_hash")
+    .limit(1)
+    .single();
+
+  if (error || !data) {
+    alert("Error checking password.");
+    return false;
+  }
+
+  // Use Supabase/Postgres crypt comparison
+  const { data: match } = await supabaseClient.rpc("check_admin_password", {
+    input_password: inputPassword
+  });
+
+  return match === true;
+}
+/* ---------- DELETE WITH PASSWORD ---------- */
+window.del = async id =>{
+  const password = prompt("Enter password to delete this research:");
+  const valid = await verifyPassword(password);
+if (!valid) {
+    alert("Incorrect password! Delete denied.");
+    return;
+  }
+
+  if (!confirm("Delete this research?")) return;
+
+  const { error } = await supabaseClient.from("researches").delete().eq("id",id);
+  if (error) alert(error.message);
+  else location.reload();
+};
+/* ---------- EDIT WITH PASSWORD ---------- */
+window.editResearch = async id => {
+  const password = prompt("Enter password to edit this research:");
+  const valid = await verifyPassword(password);
+if (!valid) {
+    alert("Incorrect password! Edit denied.");
+    return;
+  }
+
+  const record = dataCache.find(r => r.id === id);
+  if (!record) {
+    alert("Record not found.");
+    return;
+  }
+
+  // Fill modal fields
+  document.getElementById("editTitle").value = record.title;
+  document.getElementById("editAuthors").value = toArray(record.authors).join(", ");
+  document.getElementById("editCourse").value = record.course || "";
+  document.getElementById("editYear").value = record.academic_year || "";
+  document.getElementById("editDate").value = record.research_date || "";
+  document.getElementById("editAbstract").value = record.abstract || "";
+  document.getElementById("editKeywords").value = (record.keywords || []).join(", ");
+  document.getElementById("editAdvisers").value = toArray(record.advisers).join(", ");
+  document.getElementById("editSDG").value = record.sdg || "";
+
+  // Show modal
+  const modal = document.getElementById("editModal");
+  modal.style.display = "flex";
+
+  // Close modal handler
+  const closeModal = () => { modal.style.display = "none"; };
+  document.getElementById("cancelEdit").onclick = closeModal;
+  modal.onclick = e => { if(e.target === modal) closeModal(); } // click outside closes
+
+  // Submit changes
+  const form = document.getElementById("editForm");
+  form.onsubmit = async e => {
+    e.preventDefault();
+
+    const updated = {
+      title: document.getElementById("editTitle").value.trim(),
+      authors: document.getElementById("editAuthors").value.split(",").map(a => a.trim()).filter(Boolean).join("\n"),
+      course: document.getElementById("editCourse").value.trim(),
+      academic_year: document.getElementById("editYear").value.trim(),
+      research_date: document.getElementById("editDate").value.trim(),
+      abstract: document.getElementById("editAbstract").value.trim(),
+      keywords: document.getElementById("editKeywords").value.split(",").map(k => k.trim()).filter(Boolean),
+	  advisers: document.getElementById("editAdvisers").value
+	  .split(",").map(a => a.trim()).filter(Boolean).join("\n"),
+	  sdg: toSDGArray(
+  document.getElementById("editSDG").value
+),
+}; 
+    const { error } = await supabaseClient
+      .from("researches")
+      .update(updated)
+      .eq("id", id);
+
+    if (error) alert(error.message);
+    else {
+      alert("Research updated successfully!");
+      closeModal();
+      load();
+    }
+  };
+};
+});
+</script>
+
+</body>
+</html>
+	

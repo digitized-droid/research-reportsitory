@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URSM Library - Read Only</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+html, body {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#main-content {
+  flex: 1; /* pushes footer down */
+}
+
+footer {
+  margin-top: auto;
+}
+	:root {
+            --primary-blue: #003366;
+            --secondary-blue: #00509d;
+            --accent-yellow: #ffcc00;
+            --soft-white: #f8f9fa;
+            --text-dark: #212529;
+			--gold: #fbbf24;
+            --text-gray: #6c757d;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --gradient: linear-gradient(135deg, #003366 0%, #00509d 100%);
+			--max: 1240px;
+        }
+
+    body {
+	font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--soft-white);
+      color: var(--text-dark);
+      line-height: 1.6;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      
+      background: #ffffff;
+      height: 100%;
+    }
+	
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html { height: 100%; scroll-behavior: smooth; }
+
+    img { max-width: 100%; display: block; }
+    a { text-decoration: none; }
+    .container { width: min(var(--max), calc(100% - 2rem)); margin: auto; }
+
+    /* HEADER */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      backdrop-filter: blur(14px);
+      background: #1e3a8a;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+
+    .header-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: var(--white);
+    }
+
+    .myImage{width:450px;max-width:100%}
+    .brand-text small {
+      display: block;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+    }
+
+    .brand-text strong {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 1.6rem;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-menu a {
+      color: #fff;
+      font-weight: 600;
+      position: relative;
+      padding: 0.2rem 0;
+    }
+
+    .nav-menu a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -4px;
+      width: 0;
+            height: 2.5px;
+  border-radius: 2px;
+      background: var(--gold);
+      transition: 0.25s ease;
+    }
+
+    .nav-menu a:hover::after,
+    .nav-menu a.active::after { width: 100%; }
+
+    .nav-cta {
+      background: var(--gold);
+      color: var(--navy) !important;
+      padding: 0.7rem 1rem !important;
+      border-radius: 999px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .nav-cta::after { display: none; }
+
+    /* DROPDOWN MENU */
+.dropdown{
+  position:relative;
+}
+
+.dropdown-menu{
+  display:none;
+  position:absolute;
+  top:100%;
+  left:0;
+  background:white;
+  min-width:200px;
+  list-style:none;
+  padding:8px 0;
+  border-radius:6px;
+  box-shadow:0 6px 15px rgba(0,0,0,0.15);
+  z-index:1000;
+}
+
+.dropdown-menu li{
+  width:100%;
+}
+
+.dropdown-menu a{
+  display:block;
+  padding:10px 16px;
+  color:#1e3a8a;
+  text-decoration:none;
+  font-size:0.95rem;
+}
+
+.dropdown-menu a:hover{
+  background:#f3f4f6;
+  color:#fbbf24;
+}
+
+/* show dropdown on hover (desktop) */
+.dropdown:hover .dropdown-menu{
+  display:block;
+}
+
+/* remove underline animation inside dropdown */
+.dropdown-menu a::after{
+  display:none;
+}
+	/* Footer */
+    footer {
+      background: #1e3a8a;
+      color: #ffffff;
+      text-align: center;
+      padding: 2.5rem 2rem;
+    }
+
+    footer p {
+      margin: 0;
+      opacity: 0.9;
+    }
+
+    .footer-accent {
+      color: #fbbf24;
+      font-weight: bold;
+    }
+	
+	
+
+/* Mobile breakpoint */
+@media (max-width: 768px) {
+  .body {
+    background: url('viewphone.gif') no-repeat center center fixed;
+	height: 100%;
+  width: 100%;
+    background-size: cover;
+	
+  }
+}
+@media (max-width: 900px) {
+  .header-container { 
+    flex-direction: column; 
+    gap: 1rem; 
+  }
+
+  .nav-menu { 
+    gap: 1rem; 
+  }
+}
+/* =========================
+   TABLET RESPONSIVENESS
+   ========================= */
+/* Tablet breakpoint */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .body {
+    background: url('viewtablet.gif') no-repeat center center fixed;
+    background-size: cover;
+    height: 100%;
+    width: 100%;
+  }
+}
+
+.user-settings { position: relative; margin-left: 1rem; } 
+.gear-icon svg { width: 50px; height: 50px; display: block; } 
+.gear-icon:hover svg { transform: rotate(20deg); transition: 0.3s ease; } 
+.settings-dropdown { display: none; position: absolute; right: 0; top: 120%; width: 260px; max-height: 400px; overflow-y: auto; background: #ffffff; padding: 15px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); z-index: 1000; } 
+.settings-header { font-weight: bold; color: #1e3a8a; text-align: center; margin-bottom: 8px; } 
+.settings-content h4 { margin: 10px 0; font-size: 0.95rem; color: #1e3a8a; } 
+.settings-content input { width: 100%; padding: 6px; margin: 6px 0; border: 1px solid #ddd; border-radius: 5px; font-size: 0.85rem; } 
+.settings-content button { width: 100%; padding: 6px; margin-bottom: 8px; background: #1e3a8a; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85rem; } 
+.settings-content button:hover { background: #2563eb; } #logoutBtn { display: block; margin-left: auto; /* pushes it to the right */ background: #1e3a8a; border-radius: 5px; color: white; margin-top: 10px; } 
+#logoutBtn:hover { background:white; border-radius: 5px; color:#1e3a8a; } 
+
+/* AUTH MODAL BACKGROUND */
+#auth-modal {
+  display: flex;
+  position: relative; /* remove fixed */
+  width: 100%;
+  height: 100vh;
+  background: #f3f4f6;
+  align-items: center;
+  justify-content: center;
+    padding: 2rem;
+}
+
+/* LOGIN BOX */
+#auth-box {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 350px;
+  text-align: center;
+  border: 2px solid #4f46e5; /* purple border */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* TITLE */
+#auth-box h2 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* INPUT FIELDS */
+#auth-box input {
+  width: 100%;
+  margin: 10px 0;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+#auth-box input:focus {
+  border-color: #4f46e5;
+}
+
+/* BUTTON */
+#auth-box button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  background: #fbbf24; /* yellow */
+  color: black;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+#auth-box button:hover {
+  background: #f59e0b;
+}
+  </style>
+   <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+</head>
+<body>
+
+  <!-- HEADER (unchanged) -->
+    <header>
+  <div class="container header-container">
+    <div class="brand"><img src="ursm logo.png" alt="URS Logo" class="myImage"></div>
+    
+  </div>
+</header>
+
+<body>
+
+<!-- LOGIN -->
+<div id="auth-modal">
+  <div id="auth-box">
+    <h2 id="auth-title">Sign In</h2>
+
+    <input id="display_name" placeholder="Full Name" style="display:none;">
+    <input id="student_number" placeholder="Student Number">
+    <input id="phone" placeholder="Phone" style="display:none;">
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Password">
+
+    <button id="auth-submit">Submit</button>
+
+    <p>
+      <span id="toggle-text">No account?</span>
+      <a href="#" id="toggle-link">Sign Up</a>
+    </p>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main-content">
+  <h1>Welcome to URSM Library, Loading...</h1>
+  <p id="user-info"></p>
+  <button id="logoutBtn">Logout</button>
+</div>
+<footer>
+   <p>© 2025 <span class="footer-accent">University of Rizal System Morong Campus Library</span>. All rights reserved.</p>
+  </footer>
+<script>
+const SUPABASE_URL = "https://emakckalouwopodqehgn.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtYWtja2Fsb3V3b3BvZHFlaGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU1NzA3OTYsImV4cCI6MjA4MTE0Njc5Nn0.eRQMLCrL4xEb58ap8RKTOyJx8pusfbr8Ut037GpYXfk";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let isLogin = true;
+
+const authModal = document.getElementById("auth-modal");
+const mainContent = document.getElementById("main-content");
+const userInfo = document.getElementById("user-info");
+
+// ================= TOGGLE =================
+function toggleMode() {
+  isLogin = !isLogin;
+
+  document.getElementById("auth-title").innerText = isLogin ? "Sign In" : "Sign Up";
+  document.getElementById("toggle-text").innerText = isLogin ? "No account?" : "Already have one?";
+  document.getElementById("toggle-link").innerText = isLogin ? "Sign Up" : "Sign In";
+
+  document.getElementById("display_name").style.display = isLogin ? "none" : "block";
+  document.getElementById("phone").style.display = isLogin ? "none" : "block";
+}
+
+document.getElementById("toggle-link").addEventListener("click", e => {
+  e.preventDefault();
+  toggleMode();
+});
+
+// ================= BUTTON STATE =================
+function setButtonState(button, state) {
+  button.disabled = state === "loading";
+  button.textContent = state === "loading" ? "Processing..." : "Submit";
+}
+
+// ================= LOAD USER =================
+async function loadUser(userId = null) {
+  if (!userId) {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    userId = session?.user?.id;
+  }
+
+  if (!userId) {
+    authModal.style.display = "flex";
+    mainContent.style.display = "none";
+    return;
+  }
+
+  const { data: profile, error } = await supabaseClient
+    .from('profiles')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error || !profile) {
+    alert("Profile not found");
+    return;
+  }
+
+  authModal.style.display = "none";
+  mainContent.style.display = "block";
+
+  userInfo.textContent = `Hello, ${profile.display_name}`;
+
+  // ROLE REDIRECT (optional)
+  if ((profile.role || "").toLowerCase().trim() === "admin") {
+  window.location.href = "admin.html";
+} else {
+  window.location.href = "home.html";
+}
+}
+
+// ================= LOGIN / SIGNUP =================
+document.getElementById("auth-submit").addEventListener("click", async () => {
+  const btn = document.getElementById("auth-submit");
+  setButtonState(btn, "loading");
+
+  try {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    let student_number = document.getElementById("student_number").value.trim();
+
+    if (!student_number.toLowerCase().startsWith('m')) {
+      alert("Student number is wrong");
+      setButtonState(btn, "normal");
+      return;
+    }
+
+    student_number = student_number.replace(/^m/i, '');
+
+    if (isLogin) {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        alert(error.message);
+        setButtonState(btn, "normal");
+        return;
+      }
+
+      const userId = data.user.id;
+
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (!profile || profile.student_number !== student_number) {
+        await supabaseClient.auth.signOut();
+        alert("Incorrect student number");
+        setButtonState(btn, "normal");
+        return;
+      }
+
+      await loadUser(userId);
+
+    } else {
+      const display_name = document.getElementById("display_name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+
+      const { data, error } = await supabaseClient.auth.signUp({ email, password });
+
+      if (error) {
+        alert(error.message);
+        setButtonState(btn, "normal");
+        return;
+      }
+
+      if (data.user) {
+        await supabaseClient.from('profiles').insert({
+          user_id: data.user.id,
+          email,
+          student_number,
+          display_name,
+          phone,
+          role: "user"
+        });
+      }
+
+      alert("Account created! Check email.");
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert("Unexpected error");
+  }
+
+  setButtonState(btn, "normal");
+});
+
+// ================= LOGOUT =================
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  await supabaseClient.auth.signOut();
+  loadUser();
+});
+
+// ================= AUTO SESSION =================
+supabaseClient.auth.onAuthStateChange(() => {
+  loadUser();
+});
+
+// INITIAL LOAD
+loadUser();
+</script>
+
+</body>
+</html>
