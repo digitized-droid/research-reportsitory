@@ -313,7 +313,7 @@
             margin-bottom: 1.5rem;
         }
 
-        button:not(.download-pdf):not(.hamburger) {
+        button:not(.download-pdf):not(.hamburger):not(#logoutBtn):not(.settings-content button) {
             background: #f0f2f5;
             border: none;
             padding: 6px 12px;
@@ -323,7 +323,7 @@
             transition: all 0.2s;
         }
 
-        button:hover:not(.download-pdf) {
+       button:hover:not(.download-pdf):not(#logoutBtn):not(.settings-content button) {
             background: var(--secondary-blue);
             color: white;
         }
@@ -656,6 +656,16 @@ button.filter-btn{
 .settings-content input { width: 100%; padding: 6px; margin: 6px 0; border: 1px solid #ddd; border-radius: 5px; font-size: 0.85rem; } 
 .settings-content button { width: 100%; padding: 6px; margin-bottom: 8px; background: #1e3a8a; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85rem; } 
 .settings-content button:hover { background: #2563eb; } #logoutBtn { display: block; margin-left: auto; /* pushes it to the right */ background: #1e3a8a; border-radius: 5px; color: white; margin-top: 10px; } 
+#logoutBtn {
+    width: auto;              /* ✅ NOT full width */
+    display: inline-block;    /* ✅ shrink to text size */
+    margin-left: auto;        /* ✅ push to right */
+    margin-top: 3px;
+    padding: 2px 4px;        /* ✅ nice button size */
+    background: #1e3a8a;
+    color: white;
+    border-radius: 5px;
+}
 #logoutBtn:hover { background:white; border-radius: 5px; color:#1e3a8a; } 
 /* AUTH MODAL */ 
 #auth-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; } 
@@ -672,7 +682,7 @@ button.filter-btn{
 
       <nav>
         <ul class="nav-menu" id="nav-menu">
-          <li><a href="index.html">Home</a></li>
+          <li><a href="home.html">Home</a></li>
           <li class="dropdown">
             <a href="#" class="dropdown-toggle">About</a>
             <ul class="dropdown-menu">
@@ -833,15 +843,28 @@ function setButtonState(button,state){
 async function loadUser(userId=null){
   const { data:{ session } } = await supabaseClient.auth.getSession();
   const user = userId || (session && session.user && session.user.id);
+
   if(user){
-    const { data: profile } = await supabaseClient.from('profiles').select('*').eq('user_id', user).single();
-    userInfo.textContent = profile?.display_name || "Unknown";
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user)
+      .single();
+
+    // ✅ ROLE CHECK (IMPORTANT PART)
+    if(!profile || (profile.role !== "user" && profile.role !== "admin")){
+      window.location.href = "index.html"; // silent redirect
+      return;
+    }
+
+    // If allowed
+    userInfo.textContent = `Hello, ${profile?.display_name || "User"}`;
     logoutBtn.style.display="block";
     authModal.style.display="none";
-  }else{
-    userInfo.textContent="Not logged in";
-    logoutBtn.style.display="none";
-    authModal.style.display="flex";
+
+  } else {
+    // Not logged in → redirect instantly
+    window.location.href = "index.html";
   }
 }
 
@@ -1403,5 +1426,4 @@ function renderSDGs(data) {
 	});
 	</script>
 </html>
-
 
